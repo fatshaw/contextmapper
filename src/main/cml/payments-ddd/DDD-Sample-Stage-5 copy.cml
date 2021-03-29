@@ -1,0 +1,210 @@
+/* The DDD Cargo sample application modeled in CML. Note that we split the application into multiple bounded contexts. */
+ContextMap PaymentTransaction {
+	contains PaymentIntentContext
+	contains PaymentAttemptContext
+	contains ExecutorContext
+	contains ClearingContext
+	contains FinancialContext
+	contains FusionContext
+	contains ReconciliationContext
+	contains AdaptorContext
+
+
+	PaymentIntentContext [D] <- [U] PaymentAttemptContext
+
+	PaymentAttemptContext [D] <- [U] ExecutorContext
+
+	ExecutorContext [D] <- [U] AdaptorContext
+
+	ClearingContext	[C] <- [S] PaymentAttemptContext
+
+	ReconciliationContext [C] <- [S] ClearingContext
+
+	FinancialContext [C] <- [S] ClearingContext
+
+	PaymentAttemptContext [S] -> [C] FusionContext
+
+	PaymentIntentContext [S] -> [C] FusionContext
+
+	ClearingContext [S] -> [C] FusionContext
+
+}
+
+/* The original booking application context */
+BoundedContext PaymentIntentContext {
+	Aggregate PaymentIntent {
+		Entity PaymentIntent {
+			aggregateRoot
+			- PaymentIntentID paymentIntentID
+			- PaymentIntentState paymentIntentState
+			- Customer customer
+			- List<PaymentAttempt> paymentAttempt
+			- PurchaseOrder order
+		}
+		ValueObject PaymentIntentID {
+			int id key
+		}
+		ValueObject PurchaseOrder {
+		}
+		enum  PaymentIntentState {
+			REQUIRES_PAYMENT_METHOD,
+			REQUIRES_CUSTOMER_ACTION,
+			REQUIRES_CAPTURE,
+			SUCCEEDED,
+			CANCELLED
+		}
+		DomainEvent PaymentIntentEvent
+	}
+	Aggregate Customer{
+		Entity Customer{
+			aggregateRoot
+			- CustomerID customerID
+			- PaymentInstrument paymentInstrument
+		}
+		ValueObject CustomerID {
+			int id key
+		}
+	}
+	Aggregate PaymentInstrument{
+		Entity PaymentInstrument{
+			aggregateRoot
+			- PaymentInstrumentID paymentInstrumentID
+			- Source source
+			- Billing billing
+		}
+		ValueObject PaymentInstrumentID {
+			int id key
+		}
+		ValueObject Source{
+		}
+		ValueObject Billing{
+		}
+		DomainEvent PaymentInstrumentEvent
+	}
+}
+
+BoundedContext PaymentAttemptContext {
+	Aggregate PaymentAttempt{
+		Entity PaymentAttempt{
+			aggregateRoot
+			
+			- PaymentAttemptID paymentAttemptID
+			- PaymentInstrument paymentInstrumentSnapshot
+			- List<PaymentDirective> paymentDirectives
+			- MerchantConfig merchantConfig
+			- Processor processor
+			- PaymentAttemptState paymentAttemptState
+		}
+
+	
+		enum  PaymentAttemptState {
+			RECEIVED,
+			FAILED_TO_PROCESS,
+			FRAUD_FAILED,
+			FRAUD_DECLINED,
+			PENDING_AUTHENTICATION,
+			AUTHENTICATION_FAILED,
+			AUTHENTICATION_REDIRECTED,
+			PENDING_AUTHORIZATION,
+			AUTHORIZED,
+			AUTHORIZATION_FAILED,
+			CANCELLED,
+			EXPIRED,
+			CAPTURE_REQUESTED,
+			CAPTURE_FAILED,
+			SETTLED,
+			PAID_NOT_SETTLED,
+			PAID_SETTLED
+		}
+		ValueObject PaymentAttemptID {
+			int id key
+		}
+		ValueObject MerchantConfig{
+		}
+		ValueObject Processor{
+		}
+		DomainEvent PaymentAttemptEvent
+	}
+	
+	Aggregate Refund{
+		Entity Refund{
+			aggregateRoot
+			string paymentAttemptID
+			- RefundID refundID
+			- PaymentDirective paymentDirective
+			- PaymentInstrument paymentInstrumentSnapshot
+			- RefundState refundState
+		}
+		ValueObject RefundID {
+			int id key
+		}
+		enum  RefundState {
+			RECEIVED,
+			SENT_FOR_REFUND,
+			FAILED_RETRYABLE,
+			FAILED,
+			SUCCEEDED // Core only
+		}
+				
+		DomainEvent RefundProcessingFailedEvent
+		DomainEvent RefundProcessingSuccessEvent
+		DomainEvent RefundReceivedEvent
+		DomainEvent RefundReceivingFailedEvent
+	}
+	
+	Aggregate PaymentDirective{
+		Entity PaymentDirective{
+			aggregateRoot
+			- PaymentDirectiveID paymentDirectiveID
+			- Transaction transaction
+			- PaymentDirectiveState paymentDirectiveState
+		}
+		ValueObject PaymentDirectiveID {
+			int id key
+		}
+		enum  PaymentDirectiveState {
+			DIRECTIVE_PENDING,
+			DIRECTIVE_SUCCEEDED,
+			DIRECTIVE_FAILED,
+			DIRECTIVE_TECH_ERROR,
+			DIRECTIVE_CANCELED
+		}
+	}
+}
+
+BoundedContext ExecutorContext{
+	Aggregate Transaction{
+		Entity Transaction{
+			aggregateRoot
+
+			String id
+			String currency
+			String amount
+			String transactionType
+			String externalReferenceID
+			String outboundRequestID
+			String response
+			String processorID
+			String response
+
+			def CommunicationRequest buildRequestToAdaptor();
+			def void handleResponseFromAdaptor(CommunicationResponse response);
+			def void executeTransaction(CommunicationRequest request);
+
+		}
+	}
+}
+
+// TODO
+BoundedContext ClearingContext{
+}
+
+BoundedContext FusionContext{
+}
+
+BoundedContext FinancialContext{
+}
+
+BoundedContext ReconciliationContext{}
+
+BoundedContext AdaptorContext{}

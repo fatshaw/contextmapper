@@ -1,0 +1,175 @@
+/* The original booking application context */
+Domain PaymentAcceptance{
+	Subdomain PaymentCoreContext {
+	Aggregate PaymentIntent {
+		Entity PaymentIntent {
+			aggregateRoot
+			
+			- PaymentIntentID paymentIntentID
+			- PaymentIntentState paymentIntentState
+			- Customer customer
+			- PaymentAttempt paymentAttempt
+			- PurchaseOrder order
+
+		}
+
+		ValueObject PaymentIntentID {
+			int id key
+		}
+		
+		ValueObject PurchaseOrder {
+		}
+
+		enum  PaymentIntentState {
+			REQUIRES_PAYMENT_METHOD,
+			REQUIRES_CUSTOMER_ACTION,
+			REQUIRES_CAPTURE,
+			SUCCEEDED,
+			CANCELLED
+		}
+		
+		DomainEvent PaymentIntentEvent
+	}
+
+	Aggregate Customer{
+		Entity Customer{
+			aggregateRoot
+
+			- CustomerID customerID
+		}
+
+		ValueObject CustomerID {
+			int id key
+		}
+	}
+
+	Aggregate Refund{
+		Entity Refund{
+			aggregateRoot
+			
+			- RefundID refundID
+			- PaymentAttempt paymentAttempt
+
+		}
+
+		ValueObject RefundID {
+			int id key
+		}
+		
+
+		DomainEvent RefundProcessingFailedEvent
+		DomainEvent RefundProcessingSuccessEvent
+		DomainEvent RefundReceivedEvent
+		DomainEvent RefundReceivingFailedEvent
+
+
+	}
+	}
+
+
+Subdomain PaymentAttemptContext {
+	Aggregate PaymentAttempt{
+		Entity PaymentAttempt{
+			aggregateRoot
+			
+			- PaymentAttemptID paymentAttemptID
+			- PaymentInstrument paymentInstrument
+			- List<PaymentDirective> paymentDirectives
+			- MerchantConfig merchantConfig
+			- Processor processor
+			- PaymentAttemptState paymentAttemptState
+		}
+
+		Entity PaymentDirective{
+			- PaymentDirectiveID paymentDirectiveID
+			- Transaction transaction
+			- PaymentDirectiveState paymentDirectiveState
+		}
+
+		enum  PaymentAttemptState {
+			RECEIVED,
+			FAILED_TO_PROCESS,
+			FRAUD_FAILED,
+			FRAUD_DECLINED,
+			PENDING_AUTHENTICATION,
+			AUTHENTICATION_FAILED,
+			AUTHENTICATION_REDIRECTED,
+			PENDING_AUTHORIZATION,
+			AUTHORIZED,
+			AUTHORIZATION_FAILED,
+			CANCELLED,
+			EXPIRED,
+			CAPTURE_REQUESTED,
+			CAPTURE_FAILED,
+			SETTLED,
+			PAID_NOT_SETTLED,
+			PAID_SETTLED
+		}
+
+		enum  PaymentDirectiveState {
+			DIRECTIVE_PENDING,
+			DIRECTIVE_SUCCEEDED,
+			DIRECTIVE_FAILED,
+			DIRECTIVE_TECH_ERROR,
+			DIRECTIVE_CANCELED
+		}
+
+		ValueObject PaymentAttemptID {
+			int id key
+		}
+
+		ValueObject PaymentDirectiveID {
+			int id key
+		}
+		
+		ValueObject MerchantConfig{
+		}
+		
+		ValueObject Processor{
+		}
+
+		DomainEvent PaymentAttemptEvent
+	}
+
+	Aggregate PaymentInstrument{
+		Entity PaymentInstrument{
+			aggregateRoot
+
+			- PaymentInstrumentID paymentInstrumentID
+			- Source source
+			- Billing billing
+
+		}
+
+		ValueObject PaymentInstrumentID {
+			int id key
+		}
+
+		ValueObject Source{
+		}
+
+		ValueObject Billing{
+		}
+
+		DomainEvent PaymentInstrumentEvent
+
+	}
+
+	
+}
+
+Subdomain ExecutorContext{
+	Aggregate Transaction{
+		Entity Transaction{
+			aggregateRoot
+		}
+	}
+}
+
+// TODO
+
+Subdomain ClearingContext{}
+Subdomain FusionContext{}
+Subdomain FinancialContext{}
+
+}

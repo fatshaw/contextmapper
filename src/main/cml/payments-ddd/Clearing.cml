@@ -1,0 +1,40 @@
+/* The DDD Cargo sample application modeled in CML. Note that we split the application into multiple bounded contexts. */
+ContextMap ClearingSettlement {
+	contains PaymentCore
+	contains ClearingHouse
+	contains FinancialTransaction
+	contains Reconciliation
+	contains Adaptor
+	contains GTPN
+
+	PaymentCore [U, S] -> [D, C] ClearingHouse
+
+	ClearingHouse [U, S] -> [D, C] Reconciliation
+
+	ClearingHouse [U, S] -> [D, C] FinancialTransaction
+
+	Adaptor [U, OHS] -> [D, ACL] ClearingHouse
+
+	Adaptor [U, OHS] -> [D, ACL] Reconciliation
+
+	GTPN [U, OHS] -> [D, ACL] Reconciliation
+}
+
+BoundedContext PaymentCore{
+}
+
+BoundedContext ClearingHouse{
+}
+
+BoundedContext FinancialTransaction{
+}
+
+BoundedContext Reconciliation{
+}
+
+BoundedContext Adaptor{
+}
+
+BoundedContext GTPN{
+}
+
