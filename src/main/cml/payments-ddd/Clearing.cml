@@ -4,37 +4,190 @@ ContextMap ClearingSettlement {
 	contains ClearingHouse
 	contains FinancialTransaction
 	contains Reconciliation
-	contains Adaptor
+	contains FileGateway
 	contains GTPN
+	contains Wallet
+	contains Ledger
+	contains FX
 
 	PaymentCore [U, S] -> [D, C] ClearingHouse
+	FX [U, S] -> [D, C] ClearingHouse
+	FileGateway [U, OHS] -> [D, ACL] ClearingHouse
 
 	ClearingHouse [U, S] -> [D, C] Reconciliation
+	FileGateway [U, OHS] -> [D, ACL] Reconciliation
+	GTPN [U, OHS] -> [D, ACL] Reconciliation
+
+	ClearingHouse [U, S] -> [D, C] Ledger
 
 	ClearingHouse [U, S] -> [D, C] FinancialTransaction
 
-	Adaptor [U, OHS] -> [D, ACL] ClearingHouse
+	FinancialTransaction [U, S] -> [D, C] Wallet
 
-	Adaptor [U, OHS] -> [D, ACL] Reconciliation
-
-	GTPN [U, OHS] -> [D, ACL] Reconciliation
 }
 
 BoundedContext PaymentCore{
 }
 
 BoundedContext ClearingHouse{
+	Aggregate Payment {
+		ValueObject Payment {
+			aggregateRoot
+            - PaymentID paymentID
+		}
+		ValueObject PaymentID {
+			int id key
+		}
+	}
+	Aggregate FxBookingItem {
+		Entity FxBookingItem {
+			aggregateRoot
+            - String id
+			- String bookTransactionId
+			- Double fxRate
+			- Double buyAmount
+			- Double buyCcy
+			- String sellCcy
+			- Double sellAmount
+			- List<ClearingItem> clearingItems
+
+		}
+	}
+	Aggregate ClearingItem {
+		Entity ClearingItem{
+			aggregateRoot
+			- String id
+			- Payment payment
+			- MerchantTransaction merchantTransaction
+			- AcquirerTransaction merchantTransaction
+			- ClearingStatus status
+		}
+		ValueObject MerchantTransaction {
+			- String transactionCcy
+			- String settlementCcy
+		}
+		ValueObject AcquirerTransaction {
+			- String transactionCcy
+			- String settlementCcy
+		}
+		enum ClearingStatus{
+			RECEIVED, SEND_FOR_SETTLE, ACQUIRER_SETTLEMENT_CLEARED, ACQUIRER_SETTLED
+		}
+	}
+	Aggregate FeeItem {
+		Entity FeeItem{
+			aggregateRoot
+			- String id
+			- Payment payment
+			- List<Fee> fees
+		}
+		ValueObject Fee {
+			- Double amount
+			- String ccy
+		}
+	}
 }
 
 BoundedContext FinancialTransaction{
+	Aggregate FinancialTransaction {
+		Entity FinancialTransaction{
+			aggregateRoot
+			- String id
+			- String sourceEntity
+			- String sourceId
+			- String transactionType
+			- String transactionCcy
+			- Double transactionAmount
+			- String settlementCcy
+			- Double settlementAmount
+			- Status status
+		}
+		enum Status {
+			PENDING, SETTLED
+		}
+	}
+
+	Aggregate BatchSettlement {
+		Entity BatchSettlement{
+			aggregateRoot
+			- String id
+			- String batchId
+			- String settlementCcy
+			- Double settlementAmount
+			- List<FinancialTransaction> financialTransactions
+			- SettlementStatus status
+		}
+		enum SettlementStatus {
+			PENDING, SETTLED
+		}
+	}
 }
 
 BoundedContext Reconciliation{
+	Aggregate MerchantTransaction {
+		Entity LeftTransaction{
+			aggregateRoot
+			- String id
+			- String transactionType
+			- String transactionCcy
+			- Double transactionAmount
+			- RightTransaction acquirerTransaction
+		}
+	}
+
+	Aggregate AcquirerTransaction {
+		Entity RightTransaction{
+			aggregateRoot
+			- String id
+			- String transactionType
+			- String transactionCcy
+			- Double transactionAmount
+		}
+	}
+
+	Aggregate AcquirerSettlement {
+		Entity AcquirerSettlement{
+			aggregateRoot
+			- String id
+			- String batchId
+			- String settlementCcy
+			- Double settlementAmount
+			- String settlementCcy
+			- Double settlementAmount
+			- List<RightTransaction> acquirerTransactions
+			- AcquirerSettlementStatus status
+		}
+		enum AcquirerSettlementStatus {
+			PENDING, VERIFIED
+		}
+	}
+
+	Aggregate BankFundStatement {
+		Entity BankFundStatement{
+			aggregateRoot
+			- String id
+			- String batchId
+			- String ccy
+			- Double amount
+			- String date
+			- List<AcquirerSettlement> acquirerSettlements
+		}
+	}
 }
 
-BoundedContext Adaptor{
+BoundedContext FileGateway{
 }
 
 BoundedContext GTPN{
 }
 
+BoundedContext Wallet{
+}
+
+BoundedContext Ledger{
+
+}
+
+BoundedContext FX{
+
+}

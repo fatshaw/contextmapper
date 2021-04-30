@@ -5,7 +5,7 @@ ContextMap PaymentTransaction {
     contains PaymentCore
     contains Adaptor
     contains FX
-    contains Fraud, ThreeDS
+    contains Fraud, ThreeDS, MerchantEvents
 
     TokenInterceptor [D, C]<-[U, S] PaymentGateway
 
@@ -20,6 +20,9 @@ ContextMap PaymentTransaction {
     PaymentCore [D, ACL]<-[U] ThreeDS
 
     PaymentCore [D, ACL]<-[U] FX
+
+    MerchantEvents [D]<-[U] PaymentCore
+
 }
 
 BoundedContext TokenInterceptor{
@@ -178,3 +181,4 @@ BoundedContext Fraud{
 BoundedContext ThreeDS{
 }
 
+BoundedContext MerchantEvents{}

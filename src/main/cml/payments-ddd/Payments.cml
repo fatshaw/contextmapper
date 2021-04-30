@@ -6,15 +6,11 @@ ContextMap Payments {
     contains Transaction
     contains Clearing
     contains Settlement
-    contains FX
 
     Clearing [D] <- [U] Transaction
 
     Settlement [D] <- [U] Clearing
 
-    FX [D] <- [U] Transaction
-
-    FX [D] <- [U] Clearing
 }
 
 BoundedContext Transaction {
@@ -25,7 +21,3 @@ BoundedContext Clearing {
 
 BoundedContext Settlement {
 }
-
-BoundedContext FX {
-}
-
