@@ -1,43 +1,40 @@
 /* The DDD Cargo sample application modeled in CML. Note that we split the application into multiple bounded contexts. */
-ContextMap Finance {
-	contains PACore 
+ContextMap ClearingSettlement {
+	contains PAGateway 
+	contains PaymentCore
+	contains PAAdaptor
+	contains PAConfigCenter
+	contains PAFundSplits 
+	contains PAFusion
 	contains PAClearingHouse
 	contains FinancialTransaction
 	contains PAReconciliation
-	contains PAAdaptor
-	contains PASettlementAggregator
-	contains PAFundSplit
-	contains PAFX
-	contains PAFinance
-	contains BillingCenter
-	contains GTPN
-	contains Wallet
-	contains Ledger
-	contains FX
+	contains Scale
+	contains AccountService
 
-	PACore [S] -> [C] PAClearingHouse
-	PAFundSplit [S] -> [C] PAClearingHouse
-	PAFX [U] -> [D] PAClearingHouse
-	FX [U] -> [D] PAFX
+	PAGateway [D] <- [U] PaymentCore
+	PAGateway [D] <- [U] PAFundSplits
+	PAGateway [D] <- [U]  PAConfigCenter
+	PaymentCore [D] <- [U] PAAdaptor
 
-	PASettlementAggregator [C] <- [S] PAAdaptor
-
-	PASettlementAggregator [S] -> [C, ACL] PAClearingHouse
+	AccountService [U] -> [D,ACL] PAConfigCenter 	
+	Scale [U] -> [D,ACL] PAConfigCenter 	
+	
+	PAFusion [U] -> [D,ACL] PAFundSplits 
+	
+	PaymentCore [S] -> [C, ACL] PAClearingHouse
+	PAFundSplits [S] -> [C] PAClearingHouse
 
 	PAClearingHouse [S] -> [C] PAReconciliation
-	PASettlementAggregator [S] -> [C, ACL] PAReconciliation
-	GTPN [U, OHS] -> [D, ACL] PAReconciliation
-
-	PAClearingHouse [S] -> [C] Ledger
-	PAClearingHouse [S] -> [C] PAFinance
-	PAFinance [S] -> [C] BillingCenter 
 	PAClearingHouse [S] -> [C] FinancialTransaction
-
-	FinancialTransaction [D] <- [U] Wallet
 
 }
 
-BoundedContext PACore{
+BoundedContext Scale{
+
+}
+
+BoundedContext PaymentCore{
 }
 
 BoundedContext PAClearingHouse{
@@ -186,38 +183,14 @@ BoundedContext PAReconciliation{
 	}
 }
 
-BoundedContext PASettlementAggregator{
+BoundedContext PAGateway{
 }
 
-BoundedContext PAFX{
-
+BoundedContext PAFundSplits{
 }
 
-BoundedContext PAAdaptor{
+BoundedContext PAFusion{}
 
-}
-
-BoundedContext PAFinance{
-
-}
-
-BoundedContext GTPN{
-}
-
-BoundedContext Wallet{
-}
-
-BoundedContext Ledger{
-
-}
-
-BoundedContext FX{
-}
-
-
-BoundedContext BillingCenter{
-}
-
-BoundedContext PAFundSplit{
-
-}
+BoundedContext PAConfigCenter{}
+BoundedContext AccountService{}
+BoundedContext PAAdaptor{}

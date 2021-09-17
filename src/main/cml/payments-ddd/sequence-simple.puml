@@ -1,0 +1,146 @@
+@startuml
+
+skinparam padding 5
+skinparam roundcorner 20
+
+skinparam monochrome true
+
+autoactivate on
+
+actor "merchant" as User
+control "pagateway" as pagateway
+participant "pacore" as pacore
+participant "fundsplit" as pafundsplit
+participant "paconfigcenter" as paconfigcenter
+participant "fx" as FxService
+participant "fraud" as FraudService
+participant "3ds" as 3DSService
+participant "adaptor" as adaptor
+
+participant "clearinghouse" as clearinghouse
+participant "pareconciliation" as pareconciliation
+participant "ledger" as ledger
+participant "fts" as FTS
+participant "clientwallet" as ClientWallet
+
+
+group REAL TIME
+activate User
+User -> pagateway: create intent
+pagateway -> pacore: create intent
+return created payment intent
+return created payment intent
+
+User -> pagateway: confirm intent
+
+pagateway -> pacore: confirm intent
+
+pacore -> paconfigcenter: routing and get merchant config
+return merchant config snapshot
+
+alt DCC
+pacore -> FxService: query DCC quote  
+return dcc quote
+end 
+
+alt CARD
+pacore -> FraudService:  fraud detection
+return fraud result
+end 
+
+alt 3DS
+pacore -> 3DSService: 3ds check
+return 3ds result
+end 
+
+pacore -> adaptor: auth/capture
+
+return auth/capture result
+return confirm result
+return confirmed intent & attempt 
+
+alt "FundSplit"
+
+User -> pagateway++: create fund split by payment intent
+pagateway ->  pafundsplit++: create fund split by payment intent
+return created fund split
+return created fund split
+
+end
+deactivate User 
+end REAL TIME
+
+group OFFLINE
+
+alt MCP
+pacore -> FxService: book MCP
+return book result
+end  
+
+alt DCC
+pacore -> FxService: book DCC 
+return book result
+end  
+
+alt FundSplit
+pafundsplit -> clearinghouse++: sync fulfilled fund split 
+clearinghouse -> clearinghouse--: saved the fund split linked with the payment intent
+end  
+
+autoactivate off
+
+group merchant transaction(T)
+pacore --> clearinghouse++: merchant transaction
+clearinghouse -> clearinghouse: fx rate,fees,settlement amount
+clearinghouse --> FTS: fx rate,fees,settlement amount, status=PENDING_STATEMENT
+clearinghouse --> pareconciliation: merchant transactions
+clearinghouse --> ledger: ledger codes
+return ack
+end merchant transaction
+
+group awx rate(T+1)
+clearinghouse -> FxService++: AWX FX aggregate and booking
+return fx quote
+end awx rate(T+1)
+
+group acquirer transaction(T+1)
+adaptor --> clearinghouse++: acquirer transactions
+clearinghouse -> clearinghouse: fx rate,fees,settlement amount
+clearinghouse --> FTS: fx rate,fees,settlement amount,status=PENDING_FUNDS
+clearinghouse --> pareconciliation: acquirer transactions
+clearinghouse --> ledger: ledger codes
+return ack
+end acquirer transaction
+
+group acquirer settlement(T+1)
+adaptor --> clearinghouse++: acquirer settlement 
+clearinghouse --> ledger: ledger codes
+return ack
+adaptor --> pareconciliation: acquirer settlement 
+end acquirer settlement
+
+group bank settlement(T+3)
+adaptor -> gtpn ++: bank statement
+return bank statement
+adaptor --> pareconciliation: matched bank statement
+end bank settlement
+
+group reconciliation(T+3)
+pareconciliation --> pareconciliation: execute reconciliation
+pareconciliation --> clearinghouse++ : reconciled event
+clearinghouse --> FTS: send ft, status = BATCHED
+clearinghouse --> ledger--: ledger codes
+end reconciliation
+
+group settlement(T+3)
+FTS -> ClientWallet++: Settle Batch Settlement
+return balance
+FTS -> FTS: generate settlement report
+end Settlement
+
+end OFFLINE
+
+User -> FTS++: Query Settlement report
+User <- FTS--: Settlement report
+
+@enduml

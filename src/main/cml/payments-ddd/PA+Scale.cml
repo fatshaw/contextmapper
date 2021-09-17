@@ -1,0 +1,32 @@
+/* The DDD Cargo sample application modeled in CML. Note that we split the application into multiple bounded contexts. */
+ContextMap ClearingSettlement {
+	contains PAGateway 
+	contains PaymentCore
+	contains PAAdaptor
+	contains PAConfigCenter
+	contains Scale
+	contains AccountService
+
+	PAGateway [D] <- [U] PaymentCore
+	PaymentCore [D] <- [U] PAConfigCenter
+	PaymentCore [D] <- [U] PAAdaptor
+
+	AccountService [U] -> [D,ACL] PAConfigCenter 	
+	Scale [U] -> [D,ACL] PAConfigCenter 	
+
+}
+
+BoundedContext Scale{
+
+}
+
+BoundedContext PaymentCore{
+}
+
+BoundedContext PAGateway{
+}
+
+
+BoundedContext PAConfigCenter{}
+BoundedContext AccountService{}
+BoundedContext PAAdaptor{}

@@ -3,21 +3,15 @@ ContextMap Payments {
     type SYSTEM_LANDSCAPE
     state AS_IS
     
-    contains Transaction
-    contains Clearing
-    contains Settlement
+    contains Payments 
+    contains Finance
 
-    Clearing [D] <- [U] Transaction
-
-    Settlement [D] <- [U] Clearing
+    Finance [D] <- [U] Payments
 
 }
 
-BoundedContext Transaction {
+BoundedContext Payments {
 }
 
-BoundedContext Clearing {
-}
-
-BoundedContext Settlement {
+BoundedContext Finance {
 }

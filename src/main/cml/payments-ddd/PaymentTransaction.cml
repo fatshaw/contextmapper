@@ -3,25 +3,32 @@ ContextMap PaymentTransaction {
     contains TokenInterceptor
     contains PaymentGateway
     contains PaymentCore
-    contains Adaptor
+    contains PAAdaptor
+    contains PAFundSplit 
+    contains PAFX
+    contains PAFraud, PAThreeDS, PAMerchantEvents
+    contains PAConfigCenter
+    contains Accountservice
     contains FX
-    contains Fraud, ThreeDS, MerchantEvents
 
-    TokenInterceptor [D, C]<-[U, S] PaymentGateway
+    TokenInterceptor [D]<-[U] PaymentGateway
 
-    PaymentGateway [D, C]<-[U, S] PaymentCore
+    PaymentGateway [D]<-[U] PaymentCore
+    PaymentGateway [D]<-[U] PAFundSplit 
 
-    PaymentGateway [D, ACL]<-[U] FX
+    PaymentCore [D, ACL]<-[U] PAConfigCenter 
+    PAConfigCenter [D, ACL]<-[U, OHS] Accountservice 
 
-    PaymentCore [D, ACL]<-[U, OHS] Adaptor
+    PaymentCore [D, ACL]<-[U] PAAdaptor
 
-    PaymentCore [D, ACL]<-[U] Fraud
+    PaymentCore [D, ACL]<-[U] PAFraud
 
-    PaymentCore [D, ACL]<-[U] ThreeDS
+    PaymentCore [D, ACL]<-[U] PAThreeDS
 
-    PaymentCore [D, ACL]<-[U] FX
+    PaymentCore [D, ACL]<-[U] PAFX
+    PAFX [D, ACL]<-[U] FX
 
-    MerchantEvents [D]<-[U] PaymentCore
+    PAMerchantEvents [C]<-[S] PaymentCore
 
 }
 
@@ -169,16 +176,27 @@ BoundedContext PaymentCore {
     }
 }
 
-BoundedContext Adaptor{
+BoundedContext PAAdaptor{
 }
+
+BoundedContext PAFraud{
+}
+
+BoundedContext PAThreeDS{
+}
+
+BoundedContext PAFX{}
+
+BoundedContext PAMerchantEvents{}
+
+BoundedContext PAConfigCenter{}
+
+BoundedContext Accountservice{}
+
 
 BoundedContext FX{
-}
+} 
 
-BoundedContext Fraud{
-}
 
-BoundedContext ThreeDS{
-}
-
-BoundedContext MerchantEvents{}
+BoundedContext PAFundSplit{
+} 

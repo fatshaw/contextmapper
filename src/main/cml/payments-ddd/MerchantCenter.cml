@@ -1,0 +1,35 @@
+/* The DDD Cargo sample application modeled in CML. Note that we split the application into multiple bounded contexts. */
+ContextMap Payments {
+    type SYSTEM_LANDSCAPE
+    state AS_IS
+    
+    contains Accountservice
+    contains SCALE
+    contains PAConfigCenter
+    contains PAMerchantCenter 
+    contains AirboardNG
+    contains PASelfOnboarding
+
+    PAConfigCenter [D, ACL] <- [U] PAMerchantCenter
+    PAMerchantCenter [D, ACL] <- [U] Accountservice
+    PAMerchantCenter [D, ACL] <- [U] SCALE
+    AirboardNG [D] <- [U] PAMerchantCenter
+    
+    PAMerchantCenter [C] <- [S] PASelfOnboarding 
+
+}
+
+BoundedContext PAConfigCenter {
+}
+BoundedContext Accountservice {
+}
+BoundedContext SCALE {
+}
+BoundedContext PASelfOnboarding {
+}
+
+
+BoundedContext PAMerchantCenter{}
+
+BoundedContext AirboardNG {
+}
