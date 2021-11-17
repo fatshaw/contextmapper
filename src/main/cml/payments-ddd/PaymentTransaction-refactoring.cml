@@ -4,7 +4,7 @@ ContextMap PaymentTransaction {
     contains PaymentGateway
     contains PaymentCore
     contains PAAdaptor
-    contains PAExecutorcard
+    contains PAExecutorcard 
     contains PAExecutorwallet
     // contains PAFundSplit 
     contains PAFX
@@ -24,17 +24,20 @@ ContextMap PaymentTransaction {
 
     // PAConfigCenter [D, ACL]<-[U, OHS] Accountservice 
     PaymentCore [D, ACL]<-[U] PAExecutorcard
-    PaymentCore [D, ACL]<-[U] PAExecutorwallet
-    PaymentCore [D, ACL]<-[U] AccountUpdater
 
-    PAExecutorwallet [D, ACL]<-[U] PAAdaptor
-    PAExecutorcard [D, ACL]<-[U] PAAdaptor
+    PaymentCore [D, ACL]<-[U] PAExecutorwallet
 
     PaymentCore [D, ACL]<-[U] FinancialTransaction
 
-    PaymentCore [D, ACL]<-[U] PAFraud
+    PAExecutorcard [D, ACL]<-[U] PAAdaptor
 
-    PaymentCore [D, ACL]<-[U] PAThreeDS
+    PAExecutorcard [D, ACL]<-[U] AccountUpdater
+
+    PAExecutorcard [D, ACL]<-[U] PAFraud
+
+    PAExecutorcard [D, ACL]<-[U] PAThreeDS
+
+    PAExecutorwallet [D, ACL]<-[U] PAAdaptor
 
     PaymentCore [D, ACL]<-[U] PAFX
 
@@ -217,9 +220,9 @@ BoundedContext PAFundSplit{
 
 BoundedContext PAExecutorwallet{
 }
+
 BoundedContext PAExecutorcard{
 }
-
 
 BoundedContext FinancialTransaction{
 }

@@ -1,0 +1,69 @@
+@startuml
+
+skinparam padding 5
+skinparam roundcorner 20
+
+skinparam monochrome true
+
+autoactivate on
+
+actor "merchant" as User
+control "pagateway" as pagateway
+participant "pacore" as pacore
+participant "paconfigcenter" as paconfigcenter
+participant "fx" as FxService
+
+participant "paexecutorcard" as paexecutorcard 
+participant "cardadaptor" as cardadaptor
+participant "fraud" as FraudService
+participant "3ds" as 3DSService
+
+group REAL TIME
+activate User
+User -> pagateway: create intent
+pagateway -> pacore: create intent
+return created payment intent
+return created payment intent
+
+User -> pagateway: confirm intent
+
+pagateway -> pacore: authorize 
+
+pacore -> paconfigcenter: routing and get merchant config
+return merchant config snapshot
+
+alt DCC
+pacore -> FxService: query DCC quote  
+return dcc quote
+end 
+
+pacore -> paexecutorcard: auth/capture
+
+paexecutorcard -> FraudService:  fraud detection
+return fraud result
+alt 3DS
+paexecutorcard -> 3DSService: 3ds check
+return 3ds result
+end 
+
+paexecutorcard -> cardadaptor: auth/capture
+return auth/capture result
+
+alt accountupdater
+paexecutorcard -> accountupdater: query card info
+return card info
+end accountupdater
+return authorize result
+
+alt accountupdater
+pacore -> pacore: update instrument
+return
+end accountupdater
+
+return authorize result
+return confirmed intent & attempt 
+
+deactivate User 
+end REAL TIME
+
+@enduml
