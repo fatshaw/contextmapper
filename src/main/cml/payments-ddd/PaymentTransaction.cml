@@ -1,28 +1,29 @@
 /* The DDD Cargo sample application modeled in CML. Note that we split the application into multiple bounded contexts. */
 ContextMap PaymentTransaction {
-    // contains TokenInterceptor
+    contains TokenInterceptor
+    contains TokenInterceptor
     contains PaymentGateway
     contains PaymentCore
     contains PAAdaptor
     contains PAExecutorcard
     contains PAExecutorwallet
-    // contains PAFundSplit 
     contains PAFX
-    contains PAFraud, PAThreeDS, PAMerchantEvents
+    contains Fraud, PAThreeDS, PAMerchantEvents
     contains PAConfigCenter
     contains AccountUpdater
     contains FinancialTransaction
-    contains PAClearingHouse
+    contains Accountservice
+	contains PAFusion
 
-    // contains Accountservice
     // contains FX
-    // TokenInterceptor [D]<-[U] PaymentGateway
+    TokenInterceptor [D]<-[U] PaymentGateway
     PaymentGateway [D]<-[U] PaymentCore
+    PaymentGateway [D]<-[U] PAFusion
 
     // PaymentGateway [D]<-[U] PAFundSplit 
     PaymentCore [D, ACL]<-[U] PAConfigCenter
 
-    // PAConfigCenter [D, ACL]<-[U, OHS] Accountservice 
+    PAConfigCenter [D, ACL]<-[U, OHS] Accountservice 
     PaymentCore [D, ACL]<-[U] PAExecutorcard
     PaymentCore [D, ACL]<-[U] PAExecutorwallet
     PaymentCore [D, ACL]<-[U] AccountUpdater
@@ -32,7 +33,7 @@ ContextMap PaymentTransaction {
 
     PaymentCore [D, ACL]<-[U] FinancialTransaction
 
-    PaymentCore [D, ACL]<-[U] PAFraud
+    PaymentCore [D, ACL]<-[U] Fraud
 
     PaymentCore [D, ACL]<-[U] PAThreeDS
 
@@ -41,13 +42,15 @@ ContextMap PaymentTransaction {
     // PAFX [D, ACL]<-[U] FX
     PAMerchantEvents [C]<-[S] PaymentCore
 
-    PAClearingHouse [C]<-[S] PaymentCore
 }
 
 BoundedContext TokenInterceptor{
 }
 
 BoundedContext PaymentGateway{
+}
+
+BoundedContext PAFusion{
 }
 
 /* The original booking application context */
@@ -191,7 +194,7 @@ BoundedContext PaymentCore {
 BoundedContext PAAdaptor{
 }
 
-BoundedContext PAFraud{
+BoundedContext Fraud{
 }
 
 BoundedContext PAThreeDS{

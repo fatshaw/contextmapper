@@ -8,69 +8,18 @@ skinparam monochrome true
 autoactivate on
 
 actor "merchant" as User
-control "pagateway" as pagateway
 participant "pacore" as pacore
 participant "fundsplit" as pafundsplit
 participant "paconfigcenter" as paconfigcenter
-participant "fx" as FxService
-participant "fraud" as FraudService
-participant "3ds" as 3DSService
 participant "adaptor" as adaptor
 
 participant "clearinghouse" as clearinghouse
 participant "pareconciliation" as pareconciliation
+participant "fx" as FxService
 participant "ledger" as ledger
+control "pagateway" as pagateway
 participant "fts" as FTS
 participant "clientwallet" as ClientWallet
-
-
-group REAL TIME
-activate User
-User -> pagateway: create intent
-pagateway -> pacore: create intent
-return created payment intent
-return created payment intent
-
-User -> pagateway: confirm intent
-
-pagateway -> pacore: confirm intent
-
-pacore -> paconfigcenter: routing and get merchant config
-return merchant config snapshot
-
-alt DCC
-pacore -> FxService: query DCC quote  
-return dcc quote
-end 
-
-alt CARD
-pacore -> FraudService:  fraud detection
-return fraud result
-end 
-
-alt 3DS
-pacore -> 3DSService: 3ds check
-return 3ds result
-end 
-
-pacore -> adaptor: auth/capture
-
-return auth/capture result
-return confirm result
-return confirmed intent & attempt 
-
-alt "FundSplit"
-
-User -> pagateway++: create fund split by payment intent
-pagateway ->  pafundsplit++: create fund split by payment intent
-return created fund split
-return created fund split
-
-end
-deactivate User 
-end REAL TIME
-
-group OFFLINE
 
 alt MCP
 pacore -> FxService: book MCP
@@ -138,9 +87,12 @@ return balance
 FTS -> FTS: generate settlement report
 end Settlement
 
-end OFFLINE
 
-User -> FTS++: Query Settlement report
-User <- FTS--: Settlement report
+activate User
+User -> pagateway++: Query Settlement report
+pagateway -> FTS++: Query Settlement report
+pagateway <- FTS--: Settlement report
+User <- pagateway--: Settlement report
+deactivate User 
 
 @enduml

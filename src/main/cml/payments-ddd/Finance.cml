@@ -1,11 +1,10 @@
 /* The DDD Cargo sample application modeled in CML. Note that we split the application into multiple bounded contexts. */
 ContextMap Finance {
-	contains PACore 
+	contains PACore
 	contains PAClearingHouse
 	contains FinancialTransaction
 	contains PAReconciliation
 	contains PAAdaptor
-	contains PASettlementAggregator
 	contains PAFundSplit
 	contains PAFX
 	contains PAFinance
@@ -14,30 +13,49 @@ ContextMap Finance {
 	contains Wallet
 	contains Ledger
 	contains FX
+	contains PAConfigcenter
+	contains PAFusion
 
 	PACore [S] -> [C] PAClearingHouse
+
 	PAFundSplit [S] -> [C] PAClearingHouse
+
 	PAFX [U] -> [D] PAClearingHouse
-	FX [U] -> [D] PAFX
 
-	PASettlementAggregator [C] <- [S] PAAdaptor
+	PAConfigcenter [U] -> [D] PAClearingHouse
 
-	PASettlementAggregator [S] -> [C, ACL] PAClearingHouse
+	PAAdaptor [S] -> [C, ACL] PAClearingHouse
 
 	PAClearingHouse [S] -> [C] PAReconciliation
-	PASettlementAggregator [S] -> [C, ACL] PAReconciliation
+
+	PAAdaptor [S] -> [C, ACL] PAReconciliation
+
 	GTPN [U, OHS] -> [D, ACL] PAReconciliation
 
+	GTPN [U, OHS] -> [D, ACL] PAAdaptor
+
 	PAClearingHouse [S] -> [C] Ledger
+
+	PAClearingHouse [S] -> [C] PAFusion
+
 	PAClearingHouse [S] -> [C] PAFinance
-	PAFinance [S] -> [C] BillingCenter 
+
+	PAFinance [S] -> [C] BillingCenter
+
 	PAClearingHouse [S] -> [C] FinancialTransaction
 
 	FinancialTransaction [D] <- [U] Wallet
 
+	FX [U] -> [D] PAFX
 }
 
 BoundedContext PACore{
+}
+
+BoundedContext PAConfigcenter{
+}
+
+BoundedContext PAFusion{
 }
 
 BoundedContext PAClearingHouse{
@@ -53,7 +71,7 @@ BoundedContext PAClearingHouse{
 	Aggregate FxBookingItem {
 		Entity FxBookingItem {
 			aggregateRoot
-            - String id
+			- String id
 			- String bookTransactionId
 			- Double fxRate
 			- Double buyAmount
@@ -61,7 +79,6 @@ BoundedContext PAClearingHouse{
 			- String sellCcy
 			- Double sellAmount
 			- List<ClearingItem> clearingItems
-
 		}
 	}
 	Aggregate ClearingItem {
@@ -117,7 +134,6 @@ BoundedContext FinancialTransaction{
 			PENDING, SETTLED
 		}
 	}
-
 	Aggregate BatchSettlement {
 		Entity BatchSettlement{
 			aggregateRoot
@@ -145,7 +161,6 @@ BoundedContext PAReconciliation{
 			- RightTransaction acquirerTransaction
 		}
 	}
-
 	Aggregate AcquirerTransaction {
 		Entity RightTransaction{
 			aggregateRoot
@@ -155,7 +170,6 @@ BoundedContext PAReconciliation{
 			- Double transactionAmount
 		}
 	}
-
 	Aggregate AcquirerSettlement {
 		Entity AcquirerSettlement{
 			aggregateRoot
@@ -172,7 +186,6 @@ BoundedContext PAReconciliation{
 			PENDING, VERIFIED
 		}
 	}
-
 	Aggregate BankFundStatement {
 		Entity BankFundStatement{
 			aggregateRoot
@@ -186,19 +199,16 @@ BoundedContext PAReconciliation{
 	}
 }
 
-BoundedContext PASettlementAggregator{
+BoundedContext PAFileGateway{
 }
 
 BoundedContext PAFX{
-
 }
 
 BoundedContext PAAdaptor{
-
 }
 
 BoundedContext PAFinance{
-
 }
 
 BoundedContext GTPN{
@@ -208,16 +218,14 @@ BoundedContext Wallet{
 }
 
 BoundedContext Ledger{
-
 }
 
 BoundedContext FX{
 }
 
-
 BoundedContext BillingCenter{
 }
 
 BoundedContext PAFundSplit{
-
 }
+

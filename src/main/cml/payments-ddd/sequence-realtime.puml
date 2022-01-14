@@ -8,6 +8,9 @@ skinparam monochrome true
 autoactivate on
 
 actor "merchant" as User
+control "airway" as airway
+control "tokeninterceptor" as tokeninterceptor
+control "tokenservice" as tokenservice
 control "pagateway" as pagateway
 participant "pacore" as pacore
 participant "paconfigcenter" as paconfigcenter
@@ -19,13 +22,18 @@ participant "adaptor" as adaptor
 participant "accountupdater" as accountupdater
 
 activate User
-User -> pagateway: create intent
+User -> airway: create intent
+airway -> tokeninterceptor: create intent
+tokeninterceptor -> pagateway: create intent
 pagateway -> pacore: create intent
 return created payment intent
 return created payment intent
+return created payment intent
+return created payment intent
 
-User -> pagateway: confirm intent
-
+User -> airway: confirm intent
+airway -> tokeninterceptor: confirm intent
+tokeninterceptor -> pagateway: confirm intent
 pagateway -> pacore: authorize 
 
 pacore -> paconfigcenter: routing and get merchant config
@@ -59,6 +67,8 @@ return
 end accountupdater
 
 return authorize result
+return confirmed intent & attempt 
+return confirmed intent & attempt 
 return confirmed intent & attempt 
 
 deactivate User 
