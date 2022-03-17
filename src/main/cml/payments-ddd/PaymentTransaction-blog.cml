@@ -1,0 +1,40 @@
+/* The DDD Cargo sample application modeled in CML. Note that we split the application into multiple bounded contexts. */
+ContextMap PaymentTransaction {
+    // contains TokenInterceptor
+    contains PaymentGateway
+    contains PaymentCore
+    contains PaymentAdaptor
+    contains PaymentSettlement
+    contains PaymentFusion 
+
+
+
+    PaymentGateway [D]<-[U] PaymentCore
+    PaymentGateway [D]<-[U] PaymentFusion
+    
+    PaymentCore [D, ACL]<-[U] PaymentAdaptor
+    
+    PaymentFusion [ACL]<-[U] PaymentCore
+
+    PaymentSettlement [ACL]<-[U] PaymentCore
+
+    PaymentFusion [ACL]<-[U] PaymentSettlement
+}
+
+BoundedContext PaymentSettlement{
+}
+
+
+BoundedContext PaymentCore{
+}
+
+
+
+
+BoundedContext PaymentFusion{
+}
+
+BoundedContext PaymentAdaptor{
+}
+BoundedContext PaymentGateway{
+}
