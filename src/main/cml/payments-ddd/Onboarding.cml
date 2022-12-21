@@ -1,0 +1,28 @@
+/* The DDD Cargo sample application modeled in CML. Note that we split the application into multiple bounded contexts. */
+ContextMap Onboarding {
+    contains PAOnboarding 
+    contains RiskKYB
+    contains PAMerchantCenter
+    contains PARoutingEngine
+    contains PAAdaptors
+
+    PAOnboarding [C] <- [S] RiskKYB
+    PAMerchantCenter [D] <- [U] PAOnboarding
+    PARoutingEngine [D] <- [U] PAOnboarding
+    PAAdaptors [D] <- [U] PAOnboarding
+
+}
+BoundedContext PAOnboarding {
+}
+
+BoundedContext PAAdaptors {
+}
+
+BoundedContext RiskKYB {
+}
+
+BoundedContext PAMerchantCenter {
+}
+
+BoundedContext PARoutingEngine {
+}

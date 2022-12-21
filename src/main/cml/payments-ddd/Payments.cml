@@ -3,11 +3,15 @@ ContextMap Payments {
     type SYSTEM_LANDSCAPE
     state AS_IS
     
+    contains Onboarding 
     contains Payments 
     contains Finance
 
+    Payments [D] <- [U] Onboarding
     Finance [D] <- [U] Payments
 
+}
+BoundedContext Onboarding {
 }
 
 BoundedContext Payments {
