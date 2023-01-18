@@ -11,8 +11,10 @@ ContextMap Finance {
 	contains BillingCenter
 	contains GTPN
 	contains Wallet
+	contains OAS
 	contains Ledger
 	contains FX
+	contains Midas
 	contains PAConfigcenter
 	contains PAFusion
 
@@ -36,6 +38,8 @@ ContextMap Finance {
 
 	PAClearingHouse [S] -> [C] Ledger
 
+	PAClearingHouse [D] <- [U] Midas
+
 	PAClearingHouse [S] -> [C] PAFusion
 
 	PAClearingHouse [S] -> [C] PAFinance
@@ -45,6 +49,8 @@ ContextMap Finance {
 	PAClearingHouse [S] -> [C] FinancialTransaction
 
 	FinancialTransaction [D] <- [U] Wallet
+
+	FinancialTransaction [D] <- [U] OAS
 
 	FX [U] -> [D] PAFX
 }
@@ -227,5 +233,11 @@ BoundedContext BillingCenter{
 }
 
 BoundedContext PAFundSplit{
+}
+
+BoundedContext Midas{
+}
+
+BoundedContext OAS{
 }
 

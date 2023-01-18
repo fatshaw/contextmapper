@@ -1,47 +1,66 @@
 /* The DDD Cargo sample application modeled in CML. Note that we split the application into multiple bounded contexts. */
 ContextMap PaymentTransaction {
+    contains Airway
     contains TokenInterceptor
-    contains TokenInterceptor
+    contains TokenService
     contains PaymentGateway
     contains PaymentCore
-    contains PAAdaptor
+    contains LPMAdaptor
+    contains CardAdaptor
     contains PAExecutorcard
     contains PAExecutorwallet
     contains PAFX
-    contains Fraud, PAThreeDS, PAMerchantEvents
+    contains Fraud, PACard3ds, PAMerchantEvents
     contains PAConfigCenter
-    contains AccountUpdater
-    contains FinancialTransaction
+    contains PAMerchantCenter
+    contains PARoutingEngine
+    contains PAAccountUpdater
     contains Accountservice
-	contains PAFusion
+    contains AuthorizationService
+    contains NotificationWebhook
+    contains FX
 
-    // contains FX
+    Airway [D]<-[U] TokenInterceptor
+
     TokenInterceptor [D]<-[U] PaymentGateway
-    PaymentGateway [D]<-[U] PaymentCore
-    PaymentGateway [D]<-[U] PAFusion
 
-    // PaymentGateway [D]<-[U] PAFundSplit 
+    TokenInterceptor [D]<-[U] TokenService
+
+    PaymentGateway [D]<-[U] PaymentCore
+
     PaymentCore [D, ACL]<-[U] PAConfigCenter
 
-    PAConfigCenter [D, ACL]<-[U, OHS] Accountservice 
+    PAConfigCenter [D, ACL]<-[U, OHS] PAMerchantCenter
+
+    PAConfigCenter [D, ACL]<-[U, OHS] AuthorizationService
+
+    PAConfigCenter [D, ACL]<-[U, OHS] PARoutingEngine
+
+    PARoutingEngine [D, ACL]<-[U, OHS] PAMerchantCenter
+
+    PAMerchantCenter [D, ACL]<-[U, OHS] Accountservice
+
     PaymentCore [D, ACL]<-[U] PAExecutorcard
+
     PaymentCore [D, ACL]<-[U] PAExecutorwallet
-    PaymentCore [D, ACL]<-[U] AccountUpdater
 
-    PAExecutorwallet [D, ACL]<-[U] PAAdaptor
-    PAExecutorcard [D, ACL]<-[U] PAAdaptor
+    PaymentCore [D, ACL]<-[U] PAAccountUpdater
 
-    PaymentCore [D, ACL]<-[U] FinancialTransaction
+    PAExecutorwallet [D, ACL]<-[U] LPMAdaptor
+
+    PAExecutorcard [D, ACL]<-[U] CardAdaptor
+
+    PAExecutorcard [D, ACL]<-[U] PACard3ds
 
     PaymentCore [D, ACL]<-[U] Fraud
 
-    PaymentCore [D, ACL]<-[U] PAThreeDS
-
     PaymentCore [D, ACL]<-[U] PAFX
 
-    // PAFX [D, ACL]<-[U] FX
+    PAFX [D, ACL]<-[U] FX
+
     PAMerchantEvents [C]<-[S] PaymentCore
 
+    PAMerchantEvents [S]->[C] NotificationWebhook
 }
 
 BoundedContext TokenInterceptor{
@@ -191,13 +210,16 @@ BoundedContext PaymentCore {
     }
 }
 
-BoundedContext PAAdaptor{
+BoundedContext CardAdaptor{
+}
+
+BoundedContext LPMAdaptor{
 }
 
 BoundedContext Fraud{
 }
 
-BoundedContext PAThreeDS{
+BoundedContext PACard3ds{
 }
 
 BoundedContext PAFX{
@@ -220,9 +242,9 @@ BoundedContext PAFundSplit{
 
 BoundedContext PAExecutorwallet{
 }
+
 BoundedContext PAExecutorcard{
 }
-
 
 BoundedContext FinancialTransaction{
 }
@@ -230,6 +252,24 @@ BoundedContext FinancialTransaction{
 BoundedContext PAClearingHouse{
 }
 
-BoundedContext AccountUpdater{
+BoundedContext PAAccountUpdater{
+}
+
+BoundedContext PARoutingEngine{
+}
+
+BoundedContext PAMerchantCenter{
+}
+
+BoundedContext TokenService{
+}
+
+BoundedContext AuthorizationService{
+}
+
+BoundedContext Airway{
+}
+
+BoundedContext NotificationWebhook{
 }
 
