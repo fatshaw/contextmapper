@@ -1,0 +1,65 @@
+@startuml
+
+skinparam padding 5
+skinparam roundcorner 20
+
+skinparam monochrome true
+
+autoactivate on
+
+actor "merchant" as User
+control "webapp/airboard" as FrontEnd
+control "pagateway" as pagateway
+participant "pacore" as pacore
+participant "fts" as FTS
+participant "clientwallet" as ClientWallet
+activate User
+
+alt refund
+User -> pagateway++: refund
+pagateway -> pacore++: refund
+pacore -> FTS++: refund 
+alt receivable is not enough
+FTS -> ClientWallet: reserve
+return reserve result
+end
+FTS -> DB: save ft for refund
+return refund result
+return refund result
+return refund result
+return refund result
+end
+
+alt Query settlement in API/airboard
+User -> pagateway++: Query settlement 
+pagateway -> FTS++: Query settlement 
+FTS -> DB: Query settlement 
+return refund result
+return refund result
+return refund result
+
+end  
+
+alt Query settlement report in API
+User -> pagateway++: Query Settlement report
+pagateway -> FTS++: Query Settlement report
+FTS -> DB: Query Settlement report FileID
+return File ID
+FTS -> fileService: retrieve File Download URL by ID
+return Download URL
+pagateway <- FTS--: Settlement report Download URL
+User <- pagateway--: Settlement report Download URL
+end
+
+alt Query FTs in FrontEnd
+User -> FrontEnd++: Query Settlement/FTs
+FrontEnd -> FTS++: Query Settlement/FTs
+FTS -> DB: Query Settlement/FTs 
+return Settlement/FTs 
+FrontEnd <- FTS--: Settlement/FTs
+User <- FrontEnd--:Settlement/FTs
+end
+
+deactivate User 
+
+@enduml
