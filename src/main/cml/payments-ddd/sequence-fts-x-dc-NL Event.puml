@@ -1,0 +1,67 @@
+@startuml
+
+skinparam padding 5
+skinparam roundcorner 20
+
+skinparam monochrome true
+
+control "Clearinghouse_NL" as Clearinghouse_NL
+control "PAMerchantCenter_NL" as PAMerchantCenter_NL 
+queue "Kafka_NL" as Kafka_NL
+queue "Kafka_SG" as Kafka_SG
+participant "FTS_SG" as FTS_SG
+participant "FTS_NL" as FTS_NL
+participant "ClientWallet" as ClientWallet
+participant "PAFusion" as PAFusion
+
+activate Clearinghouse_NL
+Clearinghouse_NL -> PAMerchantCenter_NL++: get account DC
+return accountDC
+Clearinghouse_NL -> Kafka_NL++: PA clearing message with DC="accountDC"
+Clearinghouse_NL <-- Kafka_NL: ack 
+deactivate Clearinghouse_NL
+
+alt accountDC=SG 
+Kafka_NL --> Kafka_SG++: mirror maker2
+deactivate Kafka_NL
+Kafka_SG --> FTS_SG++: PA clearing message
+deactivate Kafka_SG
+FTS_SG -> FTS_SG: filter out message by DC in header
+FTS_SG -> DB++: save PA FTs and put into settlement batch
+return saved FTs 
+
+alt schedule job
+FTS_SG -> DB++: Query unsettled settlement batch
+return unsettled settlement batch
+FTS_SG -> ClientWallet++: settle settlement to wallet
+return wallet balance
+FTS_SG -> FileService++: upload settlement report
+return upload result 
+FTS_SG -> PAMerchantCenter_SG++: get PA_DC for account
+return PA_DC
+FTS_SG -> Kafka_SG++: settlement result event with DC=PA_DC
+return ack
+end schedule job
+deactivate FTS_SG
+end accountDC=SG 
+
+alt accountDC=HK
+activate Kafka_NL
+Kafka_NL --> FTS_NL--:PA clearing message 
+note right of Kafka_NL: same as accountDC=SG
+end accountDC=HK 
+
+
+alt FUSION_SG_DC
+Kafka_SG -> PAFusion++: consume settlement result
+PAFusion -> PAFusion: filter out message by DC in header
+PAFusion -> PAFusion--: update payment attempt status to PAID
+end FUSION_SG_DC
+
+alt FUSION_NL_DC
+Kafka_SG --> Kafka_NL: mirror maker2
+Kafka_NL -> PAFusion++: consume settlement result
+PAFusion -> PAFusion: filter out message by DC in header
+PAFusion -> PAFusion--: update payment attempt status to PAID
+end FUSION_NL_DC
+@enduml

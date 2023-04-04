@@ -1,0 +1,91 @@
+@startuml
+
+skinparam padding 5
+skinparam roundcorner 20
+
+skinparam monochrome true
+
+autoactivate on
+
+actor "merchant" as User
+control "webapp/airboard" as FrontEnd
+control "pagateway" as pagateway
+participant "pacore" as pacore
+participant "FTS Proxy" as FTSProxy
+participant "PA Merchant-center" as PAMerchantcenter
+participant "fts" as FTS
+participant "clientwallet" as ClientWallet
+activate User
+
+alt refund
+User -> pagateway++: refund
+pagateway -> pacore++: refund
+pacore -> FTSProxy++: refund 
+FTSProxy->PAMerchantcenter: get account_DC
+return account_DC
+FTSProxy -> FTS++: refund
+alt NL_or_SG_DC
+alt receivable is not enough
+FTS -> ClientWallet: reserve
+return reserve result
+end
+FTS -> DB: save ft for refund
+return refund result
+end NL_or_SG_DC
+return refund result
+return refund result
+return refund result
+return refund result
+end
+
+alt Query settlement in API/airboard
+User -> pagateway++: Query settlement 
+pagateway -> FTSProxy++: Query settlement 
+FTSProxy->PAMerchantcenter: get account_DC
+return account_DC
+FTSProxy -> FTS++: Query settlement 
+alt NL_or_SG_DC
+FTS -> DB: Query settlement 
+return refund result
+end NL_or_SG_DC
+return refund result
+return refund result
+return refund result
+
+end  
+
+alt Query settlement report in API
+User -> pagateway++: Query Settlement report
+pagateway -> FTSProxy++: Query Settlement report
+FTSProxy->PAMerchantcenter: get account_DC
+return account_DC
+FTSProxy -> FTS++
+alt NL_or_SG_DC
+FTS -> DB: Query Settlement report FileID
+return File ID
+FTS -> fileService: retrieve File Download URL by ID
+return Download URL
+end NL_or_SG_DC
+FTSProxy <-FTS--: Settlement report Download URL
+pagateway <- FTSProxy--: Settlement report Download URL
+User <- pagateway--: Settlement report Download URL
+end
+
+alt Query FTs in FrontEnd
+User -> FrontEnd++: Query Settlement/FTs
+FrontEnd -> FTSProxy++: Query Settlement/FTs
+FTSProxy->PAMerchantcenter: get account_DC
+return account_DC
+FTSProxy -> FTS++: Query Settlement/FTs
+alt NL_or_SG_DC
+FTS -> DB: Query Settlement/FTs 
+return Settlement/FTs 
+end NL_or_SG_DC
+FTSProxy <- FTS--: Settlement/FTs
+FrontEnd <- FTSProxy--: Settlement/FTs
+User <- FrontEnd--:Settlement/FTs
+end
+
+deactivate User 
+
+@enduml

@@ -1,0 +1,43 @@
+@startuml
+
+skinparam padding 5
+skinparam roundcorner 20
+
+skinparam monochrome true
+
+autoactivate on
+
+participant "Clearinghouse" as Clearinghouse
+participant "Kafka" as Kafka
+participant "FTS" as FTS
+participant "ClientWallet" as ClientWallet
+participant "PAFusion" as PAFusion
+
+activate Clearinghouse
+Clearinghouse -> Kafka: PA clearing message
+return ack
+deactivate Clearinghouse
+
+activate FTS 
+FTS <- Kafka--: PA clearing message
+return ack
+FTS -> DB: save PA FTs and put into settlement batch
+return saved FTs 
+
+alt schedule job
+FTS -> DB: Query unsettled settlement batch
+return unsettled settlement batch
+FTS -> ClientWallet++: settle settlement to wallet
+return wallet balance
+FTS -> FileService: upload settlement report
+return upload result 
+FTS -> Kafka: settlement result event
+return ack
+end schedule job
+deactivate FTS
+
+Kafka -> PAFusion: consume settlement result 
+PAFusion -> PAFusion--: update payment attempt status to PAID
+
+
+@enduml
