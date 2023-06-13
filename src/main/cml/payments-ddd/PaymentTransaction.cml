@@ -1,34 +1,46 @@
-/* The DDD Cargo sample application modeled in CML. Note that we split the application into multiple bounded contexts. */
+/* 
+1. downstream depends on upstream
+2. upstream does not know the existence of downstream.
+3. downstream is down, upstream still can work
+4. upstream is down, downstream can NOT work
+*/
 ContextMap PaymentTransaction {
+    contains PACheckout
     contains Airway
-    contains TokenInterceptor
-    contains TokenService
-    contains PaymentGateway
-    contains PaymentCore
-    contains LPMAdaptor
-    contains CardAdaptor
+    contains PATokenInterceptor
+    contains PATokenService
+    contains PAPaymentGateway
+    contains PAPaymentCore
+    contains PALPMAdaptor
+    contains PACardAdaptor
     contains PAExecutorcard
     contains PAExecutorwallet
     contains PAFX
-    contains Fraud, PACard3ds, PAMerchantEvents
+    contains RiskFraud, PACard3ds, PAMerchantEvents
     contains PAConfigCenter
     contains PAMerchantCenter
     contains PARoutingEngine
+    contains PAExperimentEngine 
     contains PAAccountUpdater
     contains Accountservice
     contains AuthorizationService
     contains NotificationWebhook
+    contains PAGetPaid
     contains FX
+    contains GTPN 
+    contains PAFusion
+    
+    PACheckout [D]<-[U] Airway 
+    Airway [D]<-[U] PATokenInterceptor
 
-    Airway [D]<-[U] TokenInterceptor
+    PATokenInterceptor [D]<-[U] PAPaymentGateway
+    PAGetPaid [D]<-[U] PAPaymentGateway
+    
+    PATokenInterceptor [D]<-[U] PATokenService
 
-    TokenInterceptor [D]<-[U] PaymentGateway
+    PAPaymentGateway [D]<-[U] PAPaymentCore
 
-    TokenInterceptor [D]<-[U] TokenService
-
-    PaymentGateway [D]<-[U] PaymentCore
-
-    PaymentCore [D, ACL]<-[U] PAConfigCenter
+    PAPaymentCore [D, ACL]<-[U] PAConfigCenter
 
     PAConfigCenter [D, ACL]<-[U, OHS] PAMerchantCenter
 
@@ -39,41 +51,44 @@ ContextMap PaymentTransaction {
     PARoutingEngine [D, ACL]<-[U, OHS] PAMerchantCenter
 
     PAMerchantCenter [D, ACL]<-[U, OHS] Accountservice
+    PAPaymentCore [D, ACL]<-[U] PAExperimentEngine
+    
+    PAPaymentCore [D, ACL]<-[U] PAExecutorcard
 
-    PaymentCore [D, ACL]<-[U] PAExecutorcard
+    PAPaymentCore [D, ACL]<-[U] PAExecutorwallet
 
-    PaymentCore [D, ACL]<-[U] PAExecutorwallet
+    PAPaymentCore [D, ACL]<-[U] PAAccountUpdater
 
-    PaymentCore [D, ACL]<-[U] PAAccountUpdater
+    PAExecutorwallet [D, ACL]<-[U] PALPMAdaptor
+    
+    PALPMAdaptor [D, ACL]<-[U] GTPN 
 
-    PAExecutorwallet [D, ACL]<-[U] LPMAdaptor
-
-    PAExecutorcard [D, ACL]<-[U] CardAdaptor
+    PAExecutorcard [D, ACL]<-[U] PACardAdaptor
 
     PAExecutorcard [D, ACL]<-[U] PACard3ds
 
-    PaymentCore [D, ACL]<-[U] Fraud
+    PAPaymentCore [D, ACL]<-[U] RiskFraud
 
-    PaymentCore [D, ACL]<-[U] PAFX
+    PAPaymentCore [D, ACL]<-[U] PAFX
 
     PAFX [D, ACL]<-[U] FX
 
-    PAMerchantEvents [C]<-[S] PaymentCore
-
+    PAMerchantEvents [C]<-[S] PAPaymentCore
+    PAFusion [C]<-[S] PAPaymentCore
     PAMerchantEvents [S]->[C] NotificationWebhook
 }
 
-BoundedContext TokenInterceptor{
+BoundedContext PATokenInterceptor{
 }
 
-BoundedContext PaymentGateway{
+BoundedContext PAPaymentGateway{
 }
 
 BoundedContext PAFusion{
 }
 
 /* The original booking application context */
-BoundedContext PaymentCore {
+BoundedContext PAPaymentCore {
     Aggregate PaymentIntent {
         Entity PaymentIntent {
             aggregateRoot
@@ -210,13 +225,18 @@ BoundedContext PaymentCore {
     }
 }
 
-BoundedContext CardAdaptor{
+BoundedContext PACheckout{
+}
+BoundedContext PAGetPaid{
 }
 
-BoundedContext LPMAdaptor{
+BoundedContext PACardAdaptor{
 }
 
-BoundedContext Fraud{
+BoundedContext PALPMAdaptor{
+}
+
+BoundedContext RiskFraud{
 }
 
 BoundedContext PACard3ds{
@@ -246,9 +266,6 @@ BoundedContext PAExecutorwallet{
 BoundedContext PAExecutorcard{
 }
 
-BoundedContext FinancialTransaction{
-}
-
 BoundedContext PAClearingHouse{
 }
 
@@ -261,7 +278,7 @@ BoundedContext PARoutingEngine{
 BoundedContext PAMerchantCenter{
 }
 
-BoundedContext TokenService{
+BoundedContext PATokenService{
 }
 
 BoundedContext AuthorizationService{
@@ -271,5 +288,11 @@ BoundedContext Airway{
 }
 
 BoundedContext NotificationWebhook{
+}
+
+BoundedContext PAExperimentEngine{
+}
+
+BoundedContext GTPN{
 }
 

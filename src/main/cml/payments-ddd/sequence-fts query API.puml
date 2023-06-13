@@ -15,20 +15,6 @@ participant "fts" as FTS
 participant "clientwallet" as ClientWallet
 activate User
 
-alt refund
-User -> pagateway++: refund
-pagateway -> pacore++: refund
-pacore -> FTS++: refund 
-alt receivable is not enough
-FTS -> ClientWallet: reserve
-return reserve result
-end
-FTS -> DB: save ft for refund
-return refund result
-return refund result
-return refund result
-return refund result
-end
 
 alt Query settlement in API/airboard
 User -> pagateway++: Query settlement 

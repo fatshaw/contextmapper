@@ -2,10 +2,12 @@
 ContextMap Onboarding {
     contains PAOnboarding 
     contains RiskKYB
+    contains RiskKYC
     contains PAMerchantCenter
     contains PARoutingEngine
     contains PAAdaptors
 
+    PAOnboarding [C] <- [S] RiskKYC
     PAOnboarding [C] <- [S] RiskKYB
     PAMerchantCenter [D] <- [U] PAOnboarding
     PARoutingEngine [D] <- [U] PAOnboarding
@@ -20,6 +22,10 @@ BoundedContext PAAdaptors {
 
 BoundedContext RiskKYB {
 }
+
+BoundedContext RiskKYC {
+}
+
 
 BoundedContext PAMerchantCenter {
 }
